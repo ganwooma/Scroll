@@ -1,38 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scroll Video</title>
-  <style>
-    body {
-      height: 3000px; /* 스크롤 길이 */
-      margin: 0;
-    }
-    video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scroll Video</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    background-color: black; /* 나머지 영역 검은색 */
+  }
+
+  body {
+    min-height: 20000px; /* 스크롤 길이 */
+  }
+
+  video {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* 영상 중앙 정렬 */
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 화면 비율 유지 + 남는 부분 검은색 */
+    pointer-events: none;
+    background-color: black;
+  }
+</style>
 </head>
 <body>
-  <video id="scrollVideo" src="this.mp4" muted></video>
 
-  <script>
-    const video = document.getElementById("scrollVideo");
+<video id="scrollVideo" src="output_scroll.mp4" muted preload="auto"></video>
 
-    // 영상 길이를 알고 있어야 함 (6초)
-    const videoDuration = 6; 
+<script>
+const video = document.getElementById("scrollVideo");
+const videoDuration = 10;
 
-    window.addEventListener("scroll", () => {
-      const maxScroll = document.body.scrollHeight - window.innerHeight;
-      const scrollPercent = window.scrollY / maxScroll;
+let targetTime = 0;
+let isReady = false;
 
-      // 스크롤 비율 → 비디오 시간 매핑
-      video.currentTime = videoDuration * scrollPercent;
-    });
-  </script>
+video.addEventListener("loadedmetadata", () => {
+  video.currentTime = 0.01;
+  setTimeout(() => {
+    video.currentTime = 0;
+    isReady = true;
+  }, 50);
+});
+
+window.addEventListener("scroll", () => {
+  const maxScroll = document.body.scrollHeight - window.innerHeight;
+  let p = window.scrollY / maxScroll;
+  p = Math.min(Math.max(p,0),1);
+  targetTime = videoDuration * p;
+});
+
+function update() {
+  if(isReady){
+    video.currentTime += (targetTime - video.currentTime) * 0.08;
+  }
+  requestAnimationFrame(update);
+}
+update();
+</script>
+
 </body>
 </html>
