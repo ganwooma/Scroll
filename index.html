@@ -12,7 +12,7 @@
   }
 
   body {
-    min-height: 20000px; /* 스크롤 길이 */
+    min-height: 10000px; /* 스크롤 길이 */
   }
 
   video {
@@ -35,10 +35,10 @@
 <script>
 const video = document.getElementById("scrollVideo");
 const videoDuration = 10;
-
 let targetTime = 0;
 let isReady = false;
 
+// 메타데이터 로드 후 디코더 준비
 video.addEventListener("loadedmetadata", () => {
   video.currentTime = 0.01;
   setTimeout(() => {
@@ -47,20 +47,30 @@ video.addEventListener("loadedmetadata", () => {
   }, 50);
 });
 
-window.addEventListener("scroll", () => {
+// 공통: 스크롤/터치 위치 계산
+function updateTargetTime() {
   const maxScroll = document.body.scrollHeight - window.innerHeight;
   let p = window.scrollY / maxScroll;
-  p = Math.min(Math.max(p,0),1);
+  p = Math.min(Math.max(p, 0), 1);
   targetTime = videoDuration * p;
-});
+}
 
+// 데스크탑
+window.addEventListener("scroll", updateTargetTime, { passive: true });
+
+// 모바일 터치
+window.addEventListener("touchmove", updateTargetTime, { passive: true });
+
+// rAF로 부드럽게 currentTime 업데이트
 function update() {
-  if(isReady){
+  if (isReady) {
     video.currentTime += (targetTime - video.currentTime) * 0.08;
   }
   requestAnimationFrame(update);
 }
+
 update();
+
 </script>
 
 </body>
